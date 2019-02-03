@@ -1,0 +1,73 @@
+<html lang='sl'>
+
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <meta http-equiv='refresh' content='5'>
+    <title>Smart&Simple - polnilna postaja</title>
+    <style>
+        body { background-color: black; color: white; font-family: sans-serif; font-size: 1.0em; } .subH1 a{text-decoration: none;color: #006496;}.subH1{display: block;font-size: 1em;color: #006496;text-align: right;padding: 3px 10px 0px 0px;margin-top: 30px;border-style: solid solid none solid;border-width: 2px;border-color: darkgray;border-radius: 15px 15px 0px 0px;}h1 {margin-bottom: 10px; color: #4cae4c;}h3{font-size: 1em;color: #4caf4b;margin-top: 0px;}.btn{margin-bottom: 5px;background-color: #4cae4c; font-size:1.5em; border: none; padding: 10px; width: 100%; border-radius: 5px;}.notif{font-size: 0.7em;text-align: center;display: block;}.data{background-color: darkgray;}.smart{color: #4caf4b;}.tri{font-size:1em;}.lower{font-size:0.8em;}.textVer{font-size:0.5em;color:lightgray;text-align:right;display:block;margin-right:15px;}.blueline{border-top: 2px solid #006496;margin: -16px 0px 10px 13%;}.state{background-color: darkgray;margin-bottom: 15px;}.err{background-color: lightcoral;margin-bottom: 15px;}.menu{background-color: black;color: #4caf4b;border-style: none solid solid solid;border-width: 2px;border-color: darkgray;border-radius: 0px 0px 15px 15px;font-size: 1em;font-weight: bold;}.text-center{text-align: center;margin-bottom: 5px;margin-top: 0px;}.form-control{width: 100%;border-radius: 5px;border: none;padding: 5px;font-size: 1.5em;margin-bottom: 15px;background-color: darkgrey;}.col-md-12{width:100%;} .col-md-6{width:49%; display: inline-block;margin: 0px 1px 0px 1px;}.col-md-4{width:33%; display: inline-block;margin: 0px 0px 0px 1px;}.col-md-3{width:24%; display: inline-block;margin: 0px 0px 0px 1px;} hr{width:97%;border: 1px solid #5d5d5d;} </style>
+</head>
+
+<body>
+    <h1>Smart & Simple</h1>
+    <div class='blueline'></div>
+    <div class='row'>
+        <div class='col-md-6'>
+            <form action='/' method='POST'><button type='button submit' class='btn menu'>STANJE</button></form>
+        </div>
+        <div class='col-md-6'>
+            <form action='/set' method='POST'><button type='button submit' class='btn menu'>NASTAVITVE</button></form>
+        </div>
+    </div>
+    <div class='row'>
+        <form action='/' method='POST'><button type='button submit' class='btn state'>Polnjenje v teku</button></form>
+    </div>
+    <div class='row'>
+        <div class='col-md-12'>
+            <p class='text-center'>NAČIN delovanja</p>
+        </div>
+        <div class='col-md-12'>
+            <form action='/' method='POST'><button name='mode' value='1' type='button submit' class='btn'>VEDNO polni</button></form>
+        </div>
+    </div>
+    <div class='row' id='energy'>
+        <div class='col-md-6'>
+            <p class='text-center'>ELEKRIČNA energija</p>
+        </div>
+        <div class='col-md-6'>
+            <form action='/#energy' method='POST'><button type='button submit' class='btn data'>4.50kWh</button></form>
+        </div>
+    </div>
+    <div class='row' id='charge'>
+        <div class='col-md-6'>
+            <p class='text-center'>POLNILNI tokovi</p>
+        </div>
+        <div class='col-md-6'>
+            <form action='/#charge' method='POST'><button type='button submit' class='btn data tri'>L1 = 20.29A <span
+                        class='lower'>/ 21.00A</span><br>L2 = 0.00A <br>L3 = 0.00A </button></form>
+        </div>
+    </div>
+    <div class='row' id='remote'>
+        <div class='col-md-6'>
+            <p class='text-center'>SKUPNI tokovi</p>
+        </div>
+        <div class='col-md-6'>
+            <form action='/#remote' method='POST'><button type='button submit' class='btn data tri'>L1 = 22.78A<br>L2 =
+                    1.26A<br>L3 = 0.45A</button></form>
+        </div>
+    </div>
+    <div class='row' id='smart'>
+        <div class='col-md-6'>
+            <p class='text-center'> <a href='http://smart.evsvet.eu'>smart.evsvet.eu</a></p>
+        </div>
+        <div class='col-md-6'>
+            <form action='/#smart' method='POST'><button type='button submit' class='btn data'>POVEZANA</button></form>
+        </div>
+    </div>
+    <div class='col-md-12'>
+        <div class='subH1'><span class='smart'>Smart & Simple</span> polnjenje omogoča <a href='http://evsvet.eu'>evsvet.eu</a></strong></div>
+    </div>
+</body>
+
+</html>

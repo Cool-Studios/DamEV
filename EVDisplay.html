@@ -1,0 +1,639 @@
+<html>
+<head>
+  <script>
+    /* TO-DO:
+        - No Animations
+    */
+  window.onload = function() {
+    console.log("LOADED");
+    //Configuration variables
+    var updateInterval = 1000 //in ms
+    var numberElements = 50;
+    //Globals
+    var updateCount = 0;
+    // Chart Objects
+    var Request;
+    var Charger;
+    var Mode = $("#Mode");
+    var I1cChart = $("#I1c");
+    var I2cChart = $("#I2c");
+    var I3cChart = $("#I3c");
+    var I1rChart = $("#I1rChart");
+    var I2rChart = $("#I2rChart");
+    var I3rChart = $("#I3rChart");
+    var Temp1Chart = $("#Temp1Chart");
+    var Temp2Chart = $("#Temp2Chart");
+    var EnergyChart = $("#EnergyChart");
+    var PowerChart = $("#PowerChart");
+    var Curr_Power = 0.00;
+    //chart instances & configuration
+    var commonOptions = {
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+              displayFormats: {
+                millisecond: 'mm:ss:SSS'
+              }
+            }
+          }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        },
+        //legend: {display: true},
+        tooltips:{
+          enabled: true
+        }
+    };
+    /*
+    var power = {
+      totalPower = 230,
+      currentPower
+    };
+    var PowerChartInstance = new Chart(PowerChart, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+              label: "Current Power",
+              data: power.currentPower,              
+              color: '#CF7F00'
+              
+          },
+          {
+              label: "Load Level",
+              data: power.totalPower - power.currentPower,              
+              color: '#E3E3E3'
+        }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: false,
+            text: "I2r",
+            fontSize: 18
+          },
+          legend: {display: false}
+        })
+    });
+    */
+    var current = {
+        i1r : [],
+        i2r : [],
+        i3r : []
+    };
+    var power = {
+      p1 : [],
+      p2 : [],
+      p3 : [],
+      pt : []
+    };
+    var chargingPower = {
+      cP1 : [],
+      cP2 : [],
+      cP3 : [],
+      cPT : []
+    };
+    var temp = {
+      temp :[],
+      power : []
+    };
+    var I1rChartInstance = new Chart(I1rChart, {
+        type: 'line',
+        data: {
+          datasets: [{
+              label: "I1r",
+              data: current.i1r,
+              borderWidth: 1,
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+          },
+          {
+              label: "I2r",
+              data: current.i2r,
+              borderWidth: 1,
+              borderColor: 'rgb(255, 159, 64)',
+              backgroundColor: 'rgba(255, 159, 64, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+        },
+          {
+              label: "I3r",
+              data: current.i3r,
+              borderWidth: 1,
+              borderColor: 'rgb(51, 153, 255)',
+              backgroundColor: 'rgba(51, 153, 255, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+        }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: true,
+            text: "Current",
+            fontSize: 18
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: false
+          },
+          tooltips: {
+            mode: 'nearest',
+            intersect: false
+          },
+          pan: {
+            enabled: true,
+            mode: "x",
+            speed: 10,
+            threshold: 10
+          },
+          zoom: {
+            enabled: true,
+            drag: false,
+            mode: "xy",
+            limits: {
+              max: 10,
+              min: 0.5
+            }
+					},
+          legend: {display: true}
+        })
+    });
+    $('#reset_zoom_I1r').click(function(){
+        I1rChartInstance.resetZoom();
+    });
+    $('#reset_zoom_Power').click(function(){
+        PowerChartInstance.resetZoom();
+    });
+    $('#reset_zoom_Temp1').click(function(){
+        Temp1ChartInstance.resetZoom();
+    });
+    
+    var PowerChartInstance = new Chart(PowerChart, {
+        type: 'line',
+        data: {
+          datasets: [{
+              label: "P1",
+              data: power.p1,
+              borderWidth: 1,
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+          },
+          {
+              label: "P2",
+              data: power.p2,
+              borderWidth: 1,
+              borderColor: 'rgb(255, 159, 64)',
+              backgroundColor: 'rgba(255, 159, 64, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+        },
+          {
+              label: "P3",
+              data: power.p3,
+              borderWidth: 1,
+              borderColor: 'rgb(51, 153, 255)',
+              backgroundColor: 'rgba(51, 153, 255, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+        },
+          {
+              label: "PT",
+              data: power.pt,
+              borderWidth: 1,
+              borderColor: 'rgba(102, 255, 51, 0.5)',
+              backgroundColor: 'rgba(102, 255, 51, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0
+        }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: true,
+            text: "Power",
+            fontSize: 18
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: false
+          },
+          tooltips: {
+            mode: 'nearest',
+            intersect: false
+          },
+          pan: {
+            enabled: true,
+            mode: "x",
+            speed: 10,
+            threshold: 10
+          },
+          zoom: {
+            enabled: true,
+            drag: false,
+            mode: "xy",
+            limits: {
+              max: 10,
+              min: 0.5
+            }
+					},
+          legend: {display: true}
+        })
+    });
+   
+    
+    
+    var Temp1ChartInstance = new Chart(Temp1Chart, {
+        type: 'line',
+        data: {
+          datasets: [{
+              label: "Temp1",
+              data: temp.temp,
+              borderWidth: 1,
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0,
+              yAxisID: 'Temp1'
+          },
+          {
+              label: "Power",
+              data: power.pt,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 159, 64, 0.5)',
+              backgroundColor: 'rgba(255, 159, 64, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0,
+              yAxisID: 'Power'
+          },
+          {
+              label: "Charging Power",
+              data: chargingPower.cPT,
+              borderWidth: 1,
+              borderColor: 'rgb(51, 153, 255, 0.5)',
+              backgroundColor: 'rgba(51, 153, 255, 0.2)',
+              pointHoverRadius: 10,
+              pointRadius: 0,
+              yAxisID: 'Power'
+        }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: true,
+            text: "Temp1",
+            fontSize: 18
+          },hover: {
+            mode: 'nearest',
+            intersect: false
+          },
+          tooltips: {
+            mode: 'nearest',
+            intersect: false
+          },
+          pan: {
+            enabled: true,
+            mode: "x",
+            speed: 10,
+            threshold: 10
+          },
+          zoom: {
+            enabled: true,
+            drag: false,
+            mode: "xy",
+            limits: {
+              max: 10,
+              min: 0.5
+            }
+					},
+          scales: {
+            xAxes: [{
+              type: 'time',
+              time: {
+                displayFormats: {
+                  millisecond: 'mm:ss:SSS'
+                }
+              }
+            }],
+            yAxes: [{
+              id: 'Temp1',
+              type: 'linear',
+              position: 'left'
+            }, {
+              id: 'Power',
+              type: 'linear',
+              position: 'right'
+            }]
+          },
+          legend: {display: true}
+        })
+          });
+    /*
+    var Temp2ChartInstance = new Chart(Temp2Chart, {
+        type: 'line',
+        data: {
+          datasets: [{
+              label: "Temp2",
+              data: 0,
+              fill: false,
+              borderColor: '#343e9a',
+              borderWidth: 1
+          }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: true,
+            text: "Temp2",
+            fontSize: 18
+          },
+          legend: {display: false}
+        })
+          });
+    var EnergyChartInstance = new Chart(EnergyChart, {
+        type: 'line',
+        data: {
+          datasets: [{
+              label: "Energy",
+              data: 0,
+              fill: false,
+              borderColor: '#343e9a',
+              borderWidth: 1
+          }]
+        },
+        options: Object.assign({}, commonOptions, {
+          title:{
+            display: true,
+            text: "Energy",
+            fontSize: 18
+          },
+          legend: {display: false}
+        })
+          });
+    */
+    function addData(data) {
+      if(data){
+        // --- Request Data ---
+        Request = (data['request']);      
+        document.getElementById('request').innerHTML = "Request Status: " + Request;
+        if (Request == "OK"){
+          document.getElementById('request').style.color = '#00ff04';
+        } else {
+          document.getElementById('request').style.color = '#ff0000';
+        }
+
+        // -- Charger Data --- 
+        switch (Charger = (data['charger'])) {
+          case "1":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (Charger Ready)";
+            document.getElementById('charger').style.color = '#ce42f4';
+            break;
+          case "2":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (Car Connected)";
+            document.getElementById('charger').style.color = '#00ff04';
+            break;
+          case "3":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (Charging in Progress...)";
+            document.getElementById('charger').style.color = '#0037ff';
+            break;
+          case "4":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (#### CAR OVERHEATED ####)";
+            document.getElementById('charger').style.color = '#ff0008';
+            break;
+          case "5":
+          case "6":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (#### Error while charging ####)";
+            document.getElementById('charger').style.color = '#ff0008';
+            break;
+          case "7":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (Charging Delayed)";
+            document.getElementById('charger').style.color = '#0037ff';
+            break;
+          case "8":
+            document.getElementById('charger').innerHTML = "Charger Status: " + " (Charging Disabled)";
+            document.getElementById('charger').style.color = '#000000';
+            break;
+          default:
+            document.getElementById('charger').innerHTML = "Charger Status: " + " !!!! STATION OFFLINE !!!!";
+            document.getElementById('charger').style.color = '#ff0008';
+        }
+        
+        // --- Mode Data ---
+        switch (Mode = (data['mode'])) {
+          case "1":
+            document.getElementById('mode').innerHTML = "Mode: " + " (Always Charge)";
+            document.getElementById('mode').style.color = '#00ff04';
+            break;
+          case "2":
+            document.getElementById('mode').innerHTML = "Mode: " + " (Timer)";
+            document.getElementById('mode').style.color = '#fff600';
+            break;
+          case "3":
+            document.getElementById('mode').innerHTML = "Mode: " + " (Do Not Charge)";
+            document.getElementById('mode').style.color = '#ff0008';
+            break;
+          default:
+            document.getElementById('mode').innerHTML = "Mode: " + " !!!! STATION OFFLINE !!!!";
+            document.getElementById('mode').style.color = '#ff0008';
+        }
+
+        // --- Current Power ---
+        var Max_Power = 25 * 3 * 230;
+        var RTotal = (parseFloat(data['I1r']) + parseFloat(data['I2r']) + parseFloat(data['I3r'])) ;
+        Curr_Power = (230 * RTotal );
+        Usage_Power = (Curr_Power / Max_Power) * 100;
+        document.getElementById('currentenergy').innerHTML = "Power Now: " + Curr_Power.toFixed(2) + "W   " + "Max Power: " + Max_Power + "W   " + "Usage: " + Usage_Power.toFixed(2) + "%";
+        
+        // -- Indivisual Power
+        PowerChartInstance.data.labels.push(new Date());
+        power.p1.push((parseFloat(data['I1r']).toFixed(2)) * 230);
+        power.p2.push((parseFloat(data['I2r']).toFixed(2)) * 230);
+        power.p3.push((parseFloat(data['I3r']).toFixed(2)) * 230);
+        power.pt.push(Curr_Power.toFixed(2));
+
+        // --- I1r Data ---
+        //I1r
+        I1rChartInstance.data.labels.push(new Date());
+        current.i1r.push(data['I1r']);
+        current.i2r.push(data['I2r']);
+        current.i3r.push(data['I3r']);
+        
+        
+        //Temp1
+        Temp1ChartInstance.data.labels.push(new Date());
+        var CTotal = (parseFloat(data['I1c']) + parseFloat(data['I2c']) + parseFloat(data['I3c'])) ;
+        Char_Curr_Power = (230 * CTotal );
+        temp.temp.push(data['temp1']);
+        chargingPower.cPT.push(Char_Curr_Power.toFixed(2));
+
+        /*
+        I2rChartInstance.data.labels.push(new Date());
+        I2rChartInstance.data.datasets.forEach((dataset) =>{dataset.data.push(data['I2r'])});
+        I3rChartInstance.data.labels.push(new Date());
+        I3rChartInstance.data.datasets.forEach((dataset) =>{dataset.data.push(data['I3r'])});
+        */
+
+        /*
+        Temp2ChartInstance.data.labels.push(new Date());
+        Temp2ChartInstance.data.datasets.forEach((dataset) =>{dataset.data.push(data['Temp2'])});
+        EnergyChartInstance.data.labels.push(new Date());
+        EnergyChartInstance.data.datasets.forEach((dataset) =>{dataset.data.push(data['ienergy'])});
+        */
+        if(updateCount > numberElements){
+          I1rChartInstance.data.labels.shift();
+          current.i1r.shift();
+          current.i2r.shift();
+          current.i3r.shift(); // Can Be current.shift(); for optimisation
+
+          PowerChartInstance.data.labels.shift();
+          power.p1.shift();
+          power.p2.shift();
+          power.p3.shift();
+          power.pt.shift();
+         
+          Temp1ChartInstance.data.labels.shift();
+          temp.temp.shift();
+          chargingPower.cPT.shift();
+          
+           /*
+          I2rChartInstance.data.labels.shift();
+          I2rChartInstance.data.datasets[0].data.shift();
+          I3rChartInstance.data.labels.shift();
+          I3rChartInstance.data.datasets[0].data.shift();
+          */
+
+          /*
+          Temp2ChartInstance.data.labels.shift();
+          Temp2ChartInstance.data.datasets[0].data.shift();
+          EnergyChartInstance.data.labels.shift();
+          EnergyChartInstance.data.datasets[0].data.shift();
+          */
+        }
+        else updateCount++;
+        I1rChartInstance.update();
+        PowerChartInstance.update();
+        Temp1ChartInstance.update();
+
+        /*
+        I2rChartInstance.update();
+        I3rChartInstance.update();
+        */
+
+        /*
+        Temp2ChartInstance.update();
+        EnergyChartInstance.update();
+        */
+      }
+    };
+    function updateData() {
+      console.log("Update Data");
+      $.getJSON("http://192.168.88.10/api", addData);
+      setTimeout(updateData,updateInterval);
+    }
+    updateData();
+  }
+</script>
+  <style>
+  .container{
+    display:flex;
+  }
+  .label{
+    flex:1;
+    vertical-align: middle;
+    text-align: center;
+  }
+  .c1{
+    flex:3;
+    text-align: center;
+    /*background-color: rgba(235, 113, 101, 0.73); */
+    margin: 10px;
+  }
+  .c2{
+    flex:3;
+    text-align: center;
+    /*background-color: rgba(70, 163, 71, 0.64); */
+    margin-top: 10px;
+    margin-bottom:10px;
+}
+  .c3{
+    flex:3;
+    text-align: center;
+    /*background-color:rgba(70, 140, 215, 0.74) ; */
+    margin:10px;
+  }
+  h1{
+    text-align: center;
+  }
+  </style>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+    <script type="text/javascript" src="https://npmcdn.com/Chart.Zoom.js@0.3.0/Chart.Zoom.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+</head>
+<body>
+  <h1>EV Display</h1>
+  <div id="labelCurrent" class="label">
+    <h2 id="currentenergy"></h2>
+    <h2> Current </h2>
+    <div id="statusDisplay" class="container">
+      <div id="request" style="flex:3"></div>
+      <div id="charger" style="flex:3"></div>
+      <div id="mode" style="flex:3"></div>
+    </div>
+  </div>
+  
+  <div id="CurrentContainer" class="container">
+
+    <div id="I1r" class="c1">
+      <button id="reset_zoom_I1r" style="float:left">
+        Reset zoom
+      </button>
+      <canvas id="I1rChart"></canvas>
+    </div><!--I1r-->
+
+    <!--
+    <div id="I2r" class="c2">
+
+      <canvas id="I2rChart"></canvas>
+    </div> I2r-->
+
+    <div id="Power" class="c3">
+      <button id="reset_zoom_Power" style="float:left">
+        Reset zoom
+      </button>
+      <canvas id="PowerChart"></canvas>
+    </div><!--Power-->
+  </div><!--Current + Power Container-->
+  
+  <div id="labelTemp" class="label">
+    <h2> Temperature + Power </h2>
+  </div>
+  
+  
+  <div id="Temp1" class="c1">
+      <button id="reset_zoom_Temp1" style="float:left">
+        Reset zoom
+      </button>
+      <canvas id="Temp1Chart"></canvas>
+    </div><!--Temp1-->
+
+    <!--
+    <div id="Temp2" class="c2">
+      <canvas id="Temp2Chart"></canvas>
+    </div> Temp2-->
+    <!---
+    <div id="Temp1" class="c3">
+      <button id="reset_zoom_Temp1" style="float:left">
+        Reset zoom
+      </button>
+      <canvas id="Temp1Chart"></canvas>
+    </div> Temp1-->
+    
+  </div> <!--TempContainer-->
+
+</body>
+</html>
